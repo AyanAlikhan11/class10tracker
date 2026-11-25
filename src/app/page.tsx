@@ -65,7 +65,11 @@ export default function LandingPage() {
   const handleOpenChapterVideo = (subjectId: string, chapterNumber: number) => {
     const chList = INITIAL_SAMPLE_CHAPTERS[subjectId] || [];
     const ch = chList.find((c) => c.chapterNumber === chapterNumber) || chList[0];
-    if (ch) {
+    if (!ch) return;
+
+    if (!user) {
+      setAuthGateDoc({ title: `${ch.title} — Video Lessons`, url: "/syllabus" });
+    } else {
       setActiveVideoChapter(ch);
     }
   };
@@ -464,17 +468,23 @@ export default function LandingPage() {
                     </h3>
 
                     <div className="mt-3.5 space-y-2 text-xs">
-                      {/* Direct Watch Video Button */}
+                      {/* Direct Watch Video Button (Auth Gated) */}
                       <button
                         type="button"
                         onClick={() => handleOpenChapterVideo(item.subjectId, item.chapterNum)}
                         className="w-full flex items-center justify-between p-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold transition-all group text-left"
                       >
                         <span className="flex items-center gap-2">
-                          <Play className="h-3.5 w-3.5 fill-rose-600 text-rose-600 group-hover:scale-110 transition-transform" />
-                          <span>Watch Video Lessons ({item.videos})</span>
+                          {user ? (
+                            <Play className="h-3.5 w-3.5 fill-rose-600 text-rose-600 group-hover:scale-110 transition-transform" />
+                          ) : (
+                            <Lock className="h-3.5 w-3.5 text-rose-600 group-hover:scale-110 transition-transform" />
+                          )}
+                          <span>{user ? `Watch Video Lessons (${item.videos})` : `Login to Watch (${item.videos})`}</span>
                         </span>
-                        <span className="text-[10px] bg-white px-2 py-0.5 rounded border border-rose-200">Play ▶</span>
+                        <span className="text-[10px] bg-white px-2 py-0.5 rounded border border-rose-200">
+                          {user ? "Play ▶" : "Locked 🔒"}
+                        </span>
                       </button>
 
                       {/* Direct Notes PDF Button */}
@@ -934,8 +944,8 @@ export default function LandingPage() {
         documentTitle={authGateDoc?.title}
       />
 
-      {/* Video Player Modal */}
-      {activeVideoChapter && (
+      {/* Video Player Modal (Authenticated Students Only) */}
+      {user && activeVideoChapter && (
         <VideoPlayerModal
           chapter={activeVideoChapter}
           onClose={() => setActiveVideoChapter(null)}

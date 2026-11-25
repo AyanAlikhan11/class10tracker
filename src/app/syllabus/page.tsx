@@ -24,6 +24,7 @@ import {
   X,
   FileText,
   Play,
+  Lock,
   Download,
   ExternalLink,
   ChevronRight,
@@ -90,6 +91,16 @@ export default function SyllabusTrackerPage() {
   };
 
   const handleOpenVideo = (chapter: Chapter, video?: ChapterVideoLesson) => {
+    if (!user) {
+      setAuthGateDoc({
+        id: chapter.id,
+        title: video ? `${video.title}` : `${chapter.title} — Video Lessons`,
+        pdfUrl: "",
+        fileName: "",
+        session: "CBSE Class 10 Video Lessons",
+      });
+      return;
+    }
     setActiveVideoModal({ chapter, video });
   };
 
@@ -354,15 +365,19 @@ export default function SyllabusTrackerPage() {
 
                   {/* Resource Action Pills */}
                   <div className="flex items-center gap-2.5 pt-1.5 flex-wrap">
-                    {/* Watch Video Lessons Button */}
+                    {/* Watch Video Lessons Button (Auth Gated) */}
                     {videoCount > 0 && (
                       <button
                         type="button"
                         onClick={() => handleOpenVideo(chapter)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-colors group"
                       >
-                        <Play className="h-3.5 w-3.5 fill-rose-600 text-rose-600 group-hover:scale-110 transition-transform" />
-                        <span>Watch Video Lessons ({videoCount})</span>
+                        {user ? (
+                          <Play className="h-3.5 w-3.5 fill-rose-600 text-rose-600 group-hover:scale-110 transition-transform" />
+                        ) : (
+                          <Lock className="h-3.5 w-3.5 text-rose-600 group-hover:scale-110 transition-transform" />
+                        )}
+                        <span>{user ? `Watch Video Lessons (${videoCount})` : `Login to Watch Videos (${videoCount})`}</span>
                       </button>
                     )}
 
@@ -699,8 +714,8 @@ export default function SyllabusTrackerPage() {
         onClose={() => setActivePdfModal(null)}
       />
 
-      {/* VIDEO PLAYER MODAL */}
-      {activeVideoModal && (
+      {/* VIDEO PLAYER MODAL (Authenticated Students Only) */}
+      {user && activeVideoModal && (
         <VideoPlayerModal
           chapter={activeVideoModal.chapter}
           initialVideo={activeVideoModal.video}
