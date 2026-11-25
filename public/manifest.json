@@ -1,0 +1,18 @@
+{
+  "name": "BoardPrep - Class 10 Board Companion",
+  "short_name": "BoardPrep",
+  "description": "Student-first Class 10 board exam preparation companion.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#F7F9FC",
+  "theme_color": "#3978E8",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

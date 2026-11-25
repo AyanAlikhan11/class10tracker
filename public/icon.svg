@@ -1,0 +1,34 @@
+<svg width="512" height="512" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" rx="26" fill="url(#bgGrad)"/>
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stopColor="#2563EB"/>
+      <stop stopColor="#1D4ED8"/>
+      <stop stopColor="#0D9488"/>
+    </linearGradient>
+    <linearGradient id="leftPage" x1="20" y1="35" x2="50" y2="85" gradientUnits="userSpaceOnUse">
+      <stop stopColor="#FFFFFF"/>
+      <stop stopColor="#93C5FD"/>
+    </linearGradient>
+    <linearGradient id="rightPage" x1="80" y1="35" x2="50" y2="85" gradientUnits="userSpaceOnUse">
+      <stop stopColor="#FFFFFF" stopOpacity="0.9"/>
+      <stop stopColor="#67E8F9"/>
+    </linearGradient>
+    <linearGradient id="starGrad" x1="50" y1="12" x2="50" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stopColor="#F59E0B"/>
+      <stop stopColor="#FBBF24"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left Page / Ascension Wing -->
+  <path d="M50 48L22 62C18 64 16 68 16 72V76C16 80 20 83 24 81L50 68V48Z" fill="url(#leftPage)"/>
+
+  <!-- Right Page / Ascension Wing -->
+  <path d="M50 48L78 62C82 64 84 68 84 72V76C84 80 80 83 76 81L50 68V48Z" fill="url(#rightPage)"/>
+
+  <!-- Spine Line -->
+  <path d="M50 42L47 69L50 71L53 69L50 42Z" fill="#FFFFFF" fillOpacity="0.8"/>
+
+  <!-- Golden North Star Beacon -->
+  <path d="M50 14L53.5 24.5L64 28L53.5 31.5L50 42L46.5 31.5L36 28L46.5 24.5L50 14Z" fill="url(#starGrad)"/>
+</svg>

@@ -1,0 +1,75 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 4065 >>
+stream
+q 0.145 0.388 0.921 rg 0 735 612 57 re f Q
+q 0.063 0.725 0.506 rg 0 732 612 3 re f Q
+BT /F2 12.5 Tf 1 1 1 rg 40 762 Td (CBSE Class 10 Mathematics Standard Model Paper Solutions \(2026-2027\)) Tj ET
+BT /F1 8.5 Tf 0.9 0.95 1 rg 40 746 Td (Mathematics Standard \(041\) - Step-by-Step Marking Scheme & Answers - Session 2026-2027 - Max Marks: 80) Tj ET
+BT /F1 7.5 Tf 0.45 0.52 0.62 rg 40 25 Td (NCERT24 Free Study Materials - ncert24.com - CBSE Class 10 Session 2026-2027 - Page 1) Tj ET
+q 0.88 0.91 0.94 RG 1 w 40 38 m 572 38 l S Q
+q 0.95 0.97 0.99 rg 40 640 532 70 re f Q
+q 0.145 0.388 0.921 RG 1 w 40 640 532 70 re S Q
+BT /F2 9.5 Tf 0.08 0.2 0.4 rg 50 700 Td (GENERAL INSTRUCTIONS & BOARD BLUEPRINT - 2026-2027) Tj ET
+BT /F1 8.5 Tf 0.18 0.22 0.3 rg 52 685 Td ([*] Official Step-by-Step Marking Scheme based on CBSE Board Guidelines \(Session 2026-2027\).) Tj ET
+BT /F1 8.5 Tf 0.18 0.22 0.3 rg 52 671 Td ([*] Alternative correct mathematical methods are awarded full marks.) Tj ET
+BT /F1 8.5 Tf 0.18 0.22 0.3 rg 52 657 Td ([*] Half-mark deductions apply for omitted units or missing final conclusion statements.) Tj ET
+q 0.94 0.96 0.99 rg 40 615 532 20 re f Q
+q 0.145 0.388 0.921 rg 40 615 4 20 re f Q
+BT /F2 10 Tf 0.06 0.15 0.35 rg 50 620 Td (SECTION A: MCQs Detailed Solutions) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 598 Td (Q1. Correct Option: \(b\) xy^2. Explanation: HCF is product of lowest powers of common) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 585 Td (prime factors: x^1 and y^2 => HCF = x*y^2.) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 572 Td (Q2. Correct Option: \(b\) both negative. Explanation: For x^2 + 99x + 127, sum = -99 <) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 559 Td (0 and product = 127 > 0. Since product is positive, both zeroes must have same) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 546 Td (sign; since sum is negative, both zeroes are negative.) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 533 Td (Q3. Correct Option: \(d\) no solution. Explanation: a1/a2 = 1/\(-3\) = -1/3; b1/b2 =) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 520 Td (2/\(-6\) = -1/3; c1/c2 = 5/1 = 5. Since a1/a2 = b1/b2 != c1/c2, the lines are) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 507 Td (parallel.) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 494 Td (Q4. Correct Option: \(a\) 16. Explanation: For equal roots, D = b^2 - 4ac = 0. \(-8\)^2 -) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 481 Td (4\(1\)\(k\) = 0 => 64 - 4k = 0 => k = 16.) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 468 Td (Q5. Correct Option: \(b\) 22. Explanation: a = -3, d = -1/2 - \(-3\) = 5/2. a11 = a + 10d) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 455 Td (= -3 + 10*\(5/2\) = -3 + 25 = 22.) Tj ET
+q 0.94 0.96 0.99 rg 40 431 532 20 re f Q
+q 0.145 0.388 0.921 rg 40 431 4 20 re f Q
+BT /F2 10 Tf 0.06 0.15 0.35 rg 50 436 Td (SECTION B & C: Model Descriptive Answers) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 414 Td (Q21 Solution: Assume 3 + 2*sqrt\(5\) = a/b \(rational, b!=0, co-prime a,b\). 2*sqrt\(5\) =) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 401 Td (a/b - 3 = \(a - 3b\)/b => sqrt\(5\) = \(a - 3b\)/\(2b\). Since a and b are integers, \(a -) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 388 Td (3b\)/\(2b\) is rational, which implies sqrt\(5\) is rational. This contradicts the) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 375 Td (given fact that sqrt\(5\) is irrational. Hence, 3 + 2*sqrt\(5\) is irrational. [2) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 362 Td (Marks]) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 349 Td (Q32 Solution \(Speed of Stream\): Let speed of stream = y km/h. Speed downstream = \(18) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 336 Td (+ y\) km/h; Speed upstream = \(18 - y\) km/h. Time difference: 24/\(18 - y\) - 24/\(18 +) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 323 Td (y\) = 1. 24[\(18 + y\) - \(18 - y\)] / \(324 - y^2\) = 1 => 24\(2y\) = 324 - y^2 => y^2 +) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 310 Td (48y - 324 = 0. Factoring: \(y + 54\)\(y - 6\) = 0 => y = 6 km/h \(speed cannot be) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 297 Td (negative\). Speed of stream = 6 km/h. [5 Marks]) Tj ET
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000185 00000 n 
+0000000260 00000 n 
+0000000396 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+4513
+%%EOF

@@ -1,0 +1,75 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 3720 >>
+stream
+q 0.145 0.388 0.921 rg 0 735 612 57 re f Q
+q 0.063 0.725 0.506 rg 0 732 612 3 re f Q
+BT /F2 12.5 Tf 1 1 1 rg 40 762 Td (NCERT24 Class 10 Maths Chapter-wise Important Questions \(2026-2027\)) Tj ET
+BT /F1 8.5 Tf 0.9 0.95 1 rg 40 746 Td (Mathematics Standard & Basic - High Probability Board Exam Question Bank - Session 2026-2027 - Max Marks: 100) Tj ET
+BT /F1 7.5 Tf 0.45 0.52 0.62 rg 40 25 Td (NCERT24 Free Study Materials - ncert24.com - CBSE Class 10 Session 2026-2027 - Page 1) Tj ET
+q 0.88 0.91 0.94 RG 1 w 40 38 m 572 38 l S Q
+q 0.95 0.97 0.99 rg 40 640 532 70 re f Q
+q 0.145 0.388 0.921 RG 1 w 40 640 532 70 re S Q
+BT /F2 9.5 Tf 0.08 0.2 0.4 rg 50 700 Td (GENERAL INSTRUCTIONS & BOARD BLUEPRINT - 2026-2027) Tj ET
+BT /F1 8.5 Tf 0.18 0.22 0.3 rg 52 685 Td ([*] Curated from NCERT24 \(ncert24.com\) Free Study Materials database.) Tj ET
+BT /F1 8.5 Tf 0.18 0.22 0.3 rg 52 671 Td ([*] Contains the top 50 most repeated CBSE Class 10 Board exam questions with full hints.) Tj ET
+BT /F1 8.5 Tf 0.18 0.22 0.3 rg 52 657 Td ([*] Covers Real Numbers, Polynomials, Linear Equations, Quadratic Equations, and AP.) Tj ET
+q 0.94 0.96 0.99 rg 40 615 532 20 re f Q
+q 0.145 0.388 0.921 rg 40 615 4 20 re f Q
+BT /F2 10 Tf 0.06 0.15 0.35 rg 50 620 Td (UNIT 1: Real Numbers & Polynomials Repeated Questions) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 598 Td (Q1. Prove that sqrt\(5\) is an irrational number. [CBSE 2019, 2020, 2023, 2024]) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 585 Td (Q2. If HCF\(306, 657\) = 9, find LCM\(306, 657\). [Formula: LCM = \(a*b\)/HCF = \(306*657\)/9) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 572 Td (= 22338]) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 559 Td (Q3. If alpha and beta are zeroes of p\(x\) = 2x^2 + 5x + k such that alpha^2 + beta^2 +) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 546 Td (alpha*beta = 21/4, find k.) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 533 Td (Q4. Find a quadratic polynomial whose zeroes are reciprocal of zeroes of ax^2 + bx +) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 520 Td (c.) Tj ET
+q 0.94 0.96 0.99 rg 40 496 532 20 re f Q
+q 0.145 0.388 0.921 rg 40 496 4 20 re f Q
+BT /F2 10 Tf 0.06 0.15 0.35 rg 50 501 Td (UNIT 2: Linear Equations & Quadratic Equations High-Yield Problems) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 479 Td (Q5. Find k for which the system of equations kx + 3y = k - 3 and 12x + ky = k has) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 466 Td (infinitely many solutions. [k/12 = 3/k = \(k-3\)/k => k = 6]) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 453 Td (Q6. A two-digit number is 4 times the sum of its digits and twice the product of its) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 440 Td (digits. Find the number. [Ans: 36]) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 427 Td (Q7. Solve for x: 1/\(x+4\) - 1/\(x-7\) = 11/30, x != -4, 7. [Ans: x = 1, 2]) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 414 Td (Q8. A train travels 360 km at a uniform speed. If speed had been 5 km/h more, it) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 401 Td (would have taken 1 hour less for the same journey. Find speed of train. [Ans: 40) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 388 Td (km/h]) Tj ET
+q 0.94 0.96 0.99 rg 40 364 532 20 re f Q
+q 0.145 0.388 0.921 rg 40 364 4 20 re f Q
+BT /F2 10 Tf 0.06 0.15 0.35 rg 50 369 Td (UNIT 3: Arithmetic Progressions Top Board Problems) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 347 Td (Q9. If the sum of first 7 terms of an AP is 49 and that of 17 terms is 289, find sum) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 334 Td (of first n terms. [Ans: Sn = n^2]) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 321 Td (Q10. How many terms of the AP 9, 17, 25, ... must be taken to give a sum of 636?) Tj ET
+BT /F1 8.5 Tf 0.15 0.2 0.28 rg 52 308 Td ([Ans: n = 12]) Tj ET
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000185 00000 n 
+0000000260 00000 n 
+0000000396 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+4168
+%%EOF
