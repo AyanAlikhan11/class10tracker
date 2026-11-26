@@ -28,6 +28,11 @@ export async function POST(request: Request) {
       );
     }
 
+    const contentLength = request.headers.get("content-length");
+    if (contentLength && parseInt(contentLength, 10) > 500000) {
+      return NextResponse.json({ error: "Payload too large." }, { status: 413 });
+    }
+
     const body = (await request.json()) as ContentPayload;
     await requireAdmin(body.idToken);
 
@@ -35,8 +40,10 @@ export async function POST(request: Request) {
     if (!ALLOWED_COLLECTIONS.has(collectionName)) {
       return NextResponse.json({ error: "Invalid content collection." }, { status: 400 });
     }
-    if (!body.id || typeof body.id !== "string") {
-      return NextResponse.json({ error: "A valid document id is required." }, { status: 400 });
+
+    const safeIdRegex = /^[a-zA-Z0-9_\-\.]{1,128}$/;
+    if (!body.id || typeof body.id !== "string" || !safeIdRegex.test(body.id)) {
+      return NextResponse.json({ error: "Invalid or malformed document id." }, { status: 400 });
     }
 
     const now = new Date().toISOString();

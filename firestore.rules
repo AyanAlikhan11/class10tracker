@@ -29,7 +29,7 @@ service cloud.firestore {
       return isAuthenticated() && exists(/databases/$(database)/documents/parent_links/$(request.auth.uid + '_' + studentId));
     }
 
-    // Public / Centrally Managed Syllabus & Curriculum
+    // Public / Centrally Managed Syllabus & Curriculum (Read-only for public, writes admin-only)
     match /boards/{boardId} {
       allow read: if true;
       allow write: if isAdmin();
@@ -60,57 +60,81 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /pyq_papers/{paperId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /game_questions/{questionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
     match /announcements/{announcementId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
 
-    // Student Profiles & Preferences
+    // Student Profiles & Preferences: Strict role protection prevents privilege escalation
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin() || isParentOf(userId);
-      // Users can update their profile, but cannot elevate their own role
+      // Users can update their profile, but CANNOT elevate their own role
       allow create: if isOwner(userId) && (!request.resource.data.keys().hasAny(['role']) || request.resource.data.role == 'student');
       allow update: if isOwner(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
       allow delete: if isAdmin();
     }
 
     match /student_profiles/{userId} {
-      allow read, write: if isOwner(userId) || isAdmin() || isParentOf(userId);
+      allow read: if isOwner(userId) || isAdmin() || isParentOf(userId);
+      allow create, update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
     }
 
-    // Student Progress & Private Data (Isolated per student)
+    // Student Progress & Private Data (Strictly isolated per authenticated student)
     match /student_progress/{progressId} {
       allow read: if isAuthenticated() && (resource.data.studentId == request.auth.uid || isParentOf(resource.data.studentId) || isAdmin());
       allow create: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.studentId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.studentId == request.auth.uid && request.resource.data.studentId == request.auth.uid;
+      allow delete: if isAuthenticated() && (resource.data.studentId == request.auth.uid || isAdmin());
     }
 
     // Daily Study Tasks
     match /study_tasks/{taskId} {
       allow read: if isAuthenticated() && (resource.data.studentId == request.auth.uid || isParentOf(resource.data.studentId) || isAdmin());
       allow create: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.studentId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.studentId == request.auth.uid && request.resource.data.studentId == request.auth.uid;
+      allow delete: if isAuthenticated() && (resource.data.studentId == request.auth.uid || isAdmin());
     }
 
     // Study Sessions & Focus Timers
     match /study_sessions/{sessionId} {
       allow read: if isAuthenticated() && (resource.data.studentId == request.auth.uid || isParentOf(resource.data.studentId) || isAdmin());
       allow create: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.studentId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.studentId == request.auth.uid && request.resource.data.studentId == request.auth.uid;
+      allow delete: if isAuthenticated() && (resource.data.studentId == request.auth.uid || isAdmin());
     }
 
     // Examination Records & Marks
     match /exam_records/{examId} {
       allow read: if isAuthenticated() && (resource.data.studentId == request.auth.uid || isParentOf(resource.data.studentId) || isAdmin());
       allow create: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.studentId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.studentId == request.auth.uid && request.resource.data.studentId == request.auth.uid;
+      allow delete: if isAuthenticated() && (resource.data.studentId == request.auth.uid || isAdmin());
     }
 
     // Mistake Notebook Records
     match /mistakes/{mistakeId} {
       allow read: if isAuthenticated() && (resource.data.studentId == request.auth.uid || isAdmin());
       allow create: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.studentId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.studentId == request.auth.uid && request.resource.data.studentId == request.auth.uid;
+      allow delete: if isAuthenticated() && (resource.data.studentId == request.auth.uid || isAdmin());
+    }
+
+    // Game Scores (Per student isolated record)
+    match /game_scores/{studentId} {
+      allow read: if isOwner(studentId) || isAdmin();
+      allow create, update: if isOwner(studentId) && request.resource.data.studentId == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
     // Parent-Student Linking
@@ -120,32 +144,17 @@ service cloud.firestore {
         resource.data.studentId == request.auth.uid || 
         isAdmin()
       );
-      // Link creation requires validated invitation code flow
       allow create, update, delete: if isAdmin();
-    }
-
-    // Game Questions (Admin-managed, students read)
-    match /game_questions/{questionId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-
-    // PYQ Papers collection (admin-managed, students read)
-    match /pyq_papers/{paperId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-
-    // Game Scores (per student, isolated)
-    match /game_scores/{studentId} {
-      allow read: if isOwner(studentId) || isAdmin();
-      allow create, update: if isOwner(studentId);
-      allow delete: if isAdmin();
     }
 
     // Audit logs (Admin only)
     match /audit_logs/{logId} {
       allow read, write: if isAdmin();
+    }
+
+    // Fallback security rule: deny all other collections by default
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

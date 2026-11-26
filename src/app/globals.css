@@ -18,6 +18,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Classic typography styling */
+.font-classic {
+  font-family: 'Lora', 'Newsreader', Georgia, 'Times New Roman', serif;
+  font-feature-settings: "kern" 1, "liga" 1, "clig" 1;
+}
+
+/* Crisp balanced text */
+.text-balance {
+  text-wrap: balance;
+}
+
 /* Custom subtle scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

@@ -82,8 +82,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, scope: "all", deleted });
     }
 
-    if (!body.uid) {
-      return NextResponse.json({ error: "Provide a student uid or set all=true." }, { status: 400 });
+    const safeUidRegex = /^[a-zA-Z0-9_\-\.]{1,128}$/;
+    if (!body.uid || typeof body.uid !== "string" || !safeUidRegex.test(body.uid)) {
+      return NextResponse.json({ error: "Provide a valid student uid or set all=true." }, { status: 400 });
     }
 
     const deleted = await deleteDocsForUser(body.uid);

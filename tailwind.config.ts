@@ -68,7 +68,8 @@ const config: Config = {
       fontFamily: {
         sans: ["'Plus Jakarta Sans'", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
         heading: ["'Outfit'", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-        serif: ["'Outfit'", "system-ui", "-apple-system", "sans-serif"],
+        classic: ["'Lora'", "'Newsreader'", "Georgia", "Cambria", "'Times New Roman'", "serif"],
+        serif: ["'Lora'", "'Newsreader'", "Georgia", "serif"],
       },
       borderRadius: {
         "3xl": "24px",
