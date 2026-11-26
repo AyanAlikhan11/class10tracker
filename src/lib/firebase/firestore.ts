@@ -9,6 +9,9 @@ import {
   deleteDoc,
   query,
   where,
+  orderBy,
+  limit,
+  onSnapshot,
   QueryConstraint,
   DocumentData,
 } from "firebase/firestore";
@@ -47,4 +50,32 @@ export async function queryDocs<T = DocumentData>(collectionName: string, ...con
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as T));
 }
 
-export { where };
+/**
+ * Realtime subscription for a Firestore query. Returns an unsubscribe function.
+ * This keeps the UI in sync with the database without manual refreshes.
+ */
+export function subscribeDocs<T = DocumentData>(
+  collectionName: string,
+  constraints: QueryConstraint[],
+  onData: (rows: T[]) => void,
+  onError?: (error: Error) => void
+): () => void {
+  if (!db) {
+    onData([]);
+    return () => {};
+  }
+  const colRef = collection(db, collectionName);
+  const q = query(colRef, ...constraints);
+  return onSnapshot(
+    q,
+    (snap) => {
+      onData(snap.docs.map((d) => ({ id: d.id, ...d.data() } as T)));
+    },
+    (error) => {
+      if (onError) onError(error as Error);
+      else console.error(`Realtime subscription failed for ${collectionName}:`, error);
+    }
+  );
+}
+
+export { where, orderBy, limit };

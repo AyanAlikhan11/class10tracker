@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { INITIAL_CBSE_CLASS_10_SUBJECTS, CBSE_CLASS_10_OFFICIAL_PAPERS } from "@/constants/curriculum";
-import { ProgressService, TaskService, ExamService } from "@/services";
-import { StudentChapterProgress, StudyTask, ExamRecord } from "@/types";
+import { ProgressService, TaskService, ExamService, ContentService } from "@/services";
+import { StudentChapterProgress, StudyTask, ExamRecord, Chapter, Subject } from "@/types";
 import { getDaysRemaining } from "@/lib/utils";
 import {
   Calendar,
@@ -32,12 +31,35 @@ import {
   FileText,
 } from "lucide-react";
 
+const SUBJECT_STYLES = [
+  { color: "text-blue-600", bg: "bg-blue-500" },
+  { color: "text-emerald-600", bg: "bg-emerald-500" },
+  { color: "text-amber-600", bg: "bg-amber-500" },
+  { color: "text-rose-600", bg: "bg-rose-500" },
+  { color: "text-violet-600", bg: "bg-violet-500" },
+  { color: "text-pink-600", bg: "bg-pink-500" },
+];
+
+function iconForSubject(subjectId: string) {
+  if (subjectId.includes("maths")) return Calculator;
+  if (subjectId.includes("science")) return Atom;
+  if (subjectId.includes("social")) return Globe;
+  if (subjectId.includes("english")) return Languages;
+  return BookOpen;
+}
+
 export default function StudentDashboardPage() {
   const { user, studentProfile } = useAuth();
+  const uid = user?.uid || "";
+  const todayStr = new Date().toISOString().split("T")[0];
+
   const [progressList, setProgressList] = useState<StudentChapterProgress[]>([]);
   const [tasks, setTasks] = useState<StudyTask[]>([]);
   const [exams, setExams] = useState<ExamRecord[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
+  const seededRef = useRef(false);
 
   const studentName = user?.displayName ? user.displayName.split(" ")[0] : "Student";
 
@@ -50,152 +72,168 @@ export default function StudentDashboardPage() {
 
   const daysToExam = getDaysRemaining(studentProfile?.boardExamDate || "2027-02-15");
 
+  // Load admin-managed curriculum content once.
   useEffect(() => {
-    const loadData = async () => {
-      const uid = user?.uid || "demo-student-101";
+    let cancelled = false;
+    (async () => {
       try {
-        const [prog, daily, examRecs] = await Promise.all([
-          ProgressService.getStudentProgress(uid),
-          TaskService.getDailyTasks(uid, new Date().toISOString().split("T")[0]),
-          ExamService.getStudentExams(uid),
+        const [subs, chs] = await Promise.all([
+          ContentService.getSubjects(),
+          ContentService.getAllChapters(),
         ]);
-
-        setProgressList(prog);
-
-        if (daily.length > 0) {
-          setTasks(daily);
-        } else {
-          const initialTasks: StudyTask[] = [
-            {
-              id: "task-1",
-              studentId: uid,
-              date: new Date().toISOString().split("T")[0],
-              subjectId: "cbse-10-maths-std",
-              chapterId: "math-ch-1",
-              title: "Solve 5 PYQ Questions on Real Numbers",
-              description: "Practice proofs of irrational numbers (√2, √3) from CBSE official board paper.",
-              estimatedMinutes: 25,
-              priority: "high",
-              reason: "upcoming_exam",
-              reasonExplanation: "Important 3-mark board exam topic.",
-              isCompleted: false,
-              createdAt: new Date().toISOString(),
-            },
-            {
-              id: "task-2",
-              studentId: uid,
-              date: new Date().toISOString().split("T")[0],
-              subjectId: "cbse-10-science",
-              chapterId: "sci-ch-1",
-              title: "Revise Chemical Equations & Types of Reactions",
-              description: "Read NCERT key summary points and practice 4 redox reaction equations.",
-              estimatedMinutes: 20,
-              priority: "high",
-              reason: "syllabus_backlog",
-              reasonExplanation: "Foundational chapter for Chemistry term exam.",
-              isCompleted: false,
-              createdAt: new Date().toISOString(),
-            },
-            {
-              id: "task-3",
-              studentId: uid,
-              date: new Date().toISOString().split("T")[0],
-              subjectId: "cbse-10-social-science",
-              chapterId: "sst-ch-1",
-              title: "Nationalism in Europe Timeline Review",
-              description: "Quick 15-minute visual flashcard scan of major events and treaties.",
-              estimatedMinutes: 15,
-              priority: "medium",
-              reason: "revision_due",
-              reasonExplanation: "Scheduled 7-day spaced repetition.",
-              isCompleted: true,
-              createdAt: new Date().toISOString(),
-            },
-          ];
-          setTasks(initialTasks);
-        }
-
-        if (examRecs.length > 0) {
-          setExams(examRecs);
-        } else {
-          setExams([
-            {
-              id: "exam-sample-1",
-              studentId: uid,
-              examName: "Half-Yearly Examination",
-              examType: "half_yearly",
-              date: "2026-09-18",
-              subjectId: "cbse-10-maths-std",
-              maximumMarks: 80,
-              obtainedMarks: 68,
-              percentage: 85,
-              remarks: "Good attempt, lost marks in quadratic word problems.",
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-          ]);
+        if (!cancelled) {
+          setSubjects(subs);
+          setChapters(chs);
         }
       } catch (err) {
-        console.error("Error loading dashboard data:", err);
-      } finally {
-        setLoading(false);
+        console.warn("Could not load curriculum content:", err);
       }
+    })();
+    return () => {
+      cancelled = true;
     };
+  }, []);
 
-    loadData();
-  }, [user]);
+  // Realtime, per-user subscriptions. No shared/demo identifiers are used.
+  useEffect(() => {
+    if (!uid) {
+      setProgressList([]);
+      setTasks([]);
+      setExams([]);
+      setLoading(false);
+      return;
+    }
 
-  const toggleTask = (taskId: string) => {
+    setLoading(true);
+    const unsubProgress = ProgressService.subscribeStudentProgress(uid, setProgressList);
+    const unsubTasks = TaskService.subscribeDailyTasks(uid, todayStr, (rows) => {
+      setTasks(rows.sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || "")));
+      setLoading(false);
+    });
+    const unsubExams = ExamService.subscribeStudentExams(uid, (rows) => {
+      setExams(rows.sort((a, b) => (b.date || "").localeCompare(a.date || "")));
+    });
+
+    return () => {
+      unsubProgress();
+      unsubTasks();
+      unsubExams();
+    };
+  }, [uid, todayStr]);
+
+  // Create a small starter plan from the student's own subjects when they have
+  // no tasks yet. Tasks are saved with user-scoped ids so they never collide.
+  useEffect(() => {
+    if (!uid || loading || seededRef.current || tasks.length > 0) return;
+    if (!subjects.length || !chapters.length) return;
+
+    const subjectIds = studentProfile?.selectedSubjectIds?.length
+      ? studentProfile.selectedSubjectIds
+      : subjects.map((s) => s.id);
+
+    const starterTasks: StudyTask[] = [];
+    for (const subjectId of subjectIds) {
+      if (starterTasks.length >= 3) break;
+      const subject = subjects.find((s) => s.id === subjectId);
+      const chapter = chapters.find((c) => c.subjectId === subjectId);
+      if (!subject || !chapter) continue;
+      const index = starterTasks.length + 1;
+      starterTasks.push({
+        id: `${uid}_${todayStr}_task-${index}`,
+        studentId: uid,
+        date: todayStr,
+        subjectId,
+        chapterId: chapter.id,
+        title: `Study ${chapter.title} — ${subject.name}`,
+        description: `Work through Chapter ${chapter.chapterNumber} topics and mark your syllabus progress.`,
+        estimatedMinutes: 20,
+        priority: index === 1 ? "high" : "medium",
+        reason: "syllabus_backlog",
+        reasonExplanation: "Starter focus generated from your selected subjects.",
+        isCompleted: false,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    if (starterTasks.length > 0) {
+      seededRef.current = true;
+      TaskService.saveTasks(starterTasks).catch((err) =>
+        console.warn("Could not save starter tasks:", err)
+      );
+    }
+  }, [uid, loading, tasks.length, subjects, chapters, studentProfile, todayStr]);
+
+  const toggleTask = async (task: StudyTask) => {
+    const nextValue = !task.isCompleted;
     setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId ? { ...t, isCompleted: !t.isCompleted } : t
-      )
+      prev.map((t) => (t.id === task.id ? { ...t, isCompleted: nextValue } : t))
     );
+    try {
+      await TaskService.toggleTaskCompletion(task.id, nextValue);
+    } catch (err) {
+      console.error("Could not save task completion:", err);
+      setTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? { ...t, isCompleted: task.isCompleted } : t))
+      );
+    }
   };
 
-  const totalChaptersAcrossSubjects = 38;
-  const completedChaptersCount =
-    progressList.filter(
-      (p) => p.status === "mastered" || p.status === "pyqs_solved"
-    ).length || 8;
-  const progressPercent = Math.round(
-    (completedChaptersCount / totalChaptersAcrossSubjects) * 100
+  const selectedSubjectIds = useMemo(
+    () =>
+      studentProfile?.selectedSubjectIds?.length
+        ? studentProfile.selectedSubjectIds
+        : subjects.map((s) => s.id),
+    [studentProfile, subjects]
   );
 
-  const subjectMeta: Record<string, { name: string; icon: any; total: number; done: number; color: string; bg: string }> = {
-    "cbse-10-maths-std": {
-      name: "Mathematics",
-      icon: Calculator,
-      total: 14,
-      done: 4,
-      color: "text-blue-600",
-      bg: "bg-blue-500",
-    },
-    "cbse-10-science": {
-      name: "Science",
-      icon: Atom,
-      total: 13,
-      done: 3,
-      color: "text-emerald-600",
-      bg: "bg-emerald-500",
-    },
-    "cbse-10-social-science": {
-      name: "Social Science",
-      icon: Globe,
-      total: 7,
-      done: 1,
-      color: "text-amber-600",
-      bg: "bg-amber-500",
-    },
-    "cbse-10-english": {
-      name: "English Language",
-      icon: Languages,
-      total: 4,
-      done: 0,
-      color: "text-rose-600",
-      bg: "bg-rose-500",
-    },
-  };
+  const visibleSubjects = useMemo(
+    () => subjects.filter((s) => selectedSubjectIds.includes(s.id)),
+    [subjects, selectedSubjectIds]
+  );
+
+  const totalChaptersAcrossSubjects = chapters.filter((c) =>
+    selectedSubjectIds.includes(c.subjectId)
+  ).length;
+
+  const completedChaptersCount = progressList.filter(
+    (p) =>
+      selectedSubjectIds.includes(p.subjectId) &&
+      (p.status === "mastered" || p.status === "pyqs_solved")
+  ).length;
+
+  const progressPercent = totalChaptersAcrossSubjects
+    ? Math.round((completedChaptersCount / totalChaptersAcrossSubjects) * 100)
+    : 0;
+
+  const averageExamPercentage = exams.length
+    ? Math.round(exams.reduce((sum, exam) => sum + exam.percentage, 0) / exams.length)
+    : 0;
+
+  const readinessScore = exams.length
+    ? Math.round(progressPercent * 0.7 + averageExamPercentage * 0.3)
+    : progressPercent;
+
+  const remainingMinutes = tasks
+    .filter((t) => !t.isCompleted)
+    .reduce((sum, t) => sum + t.estimatedMinutes, 0);
+
+  const subjectMeta = visibleSubjects.map((subject, index) => {
+    const style = SUBJECT_STYLES[index % SUBJECT_STYLES.length];
+    const total = chapters.filter((c) => c.subjectId === subject.id).length;
+    const done = progressList.filter(
+      (p) =>
+        p.subjectId === subject.id &&
+        (p.status === "mastered" || p.status === "pyqs_solved")
+    ).length;
+    return {
+      id: subject.id,
+      name: subject.name.replace(/\s*\(.*\)$/, ""),
+      icon: iconForSubject(subject.id),
+      total,
+      done,
+      ...style,
+    };
+  });
 
   return (
     <div className="space-y-7 pb-10">
@@ -254,7 +292,7 @@ export default function StudentDashboardPage() {
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
-            <span>Readiness Score: <strong className="text-slate-900 font-bold">74/100</strong></span>
+            <span>Readiness Score: <strong className="text-slate-900 font-bold">{readinessScore}/100</strong></span>
             <Link
               href="/syllabus"
               className="font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-0.5"
@@ -292,7 +330,7 @@ export default function StudentDashboardPage() {
             </p>
           </div>
           <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
-            <span>Est. Time: <strong className="text-slate-900 font-bold">45 mins</strong></span>
+            <span>Est. Time: <strong className="text-slate-900 font-bold">{remainingMinutes} mins</strong></span>
             <Link
               href="/planner"
               className="font-bold text-emerald-600 hover:text-emerald-700 inline-flex items-center gap-0.5"
@@ -410,13 +448,13 @@ export default function StudentDashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Object.entries(subjectMeta).map(([id, info]) => {
+          {subjectMeta.map((info) => {
             const Icon = info.icon;
-            const pct = Math.round((info.done / info.total) * 100);
+            const pct = info.total ? Math.round((info.done / info.total) * 100) : 0;
             return (
               <Link
-                key={id}
-                href={`/syllabus?subject=${id}`}
+                key={info.id}
+                href={`/syllabus?subject=${info.id}`}
                 className="group rounded-2xl border border-slate-200/80 bg-white p-4 hover:border-blue-400 hover:shadow-md transition-all block"
               >
                 <div className="flex items-center justify-between mb-3">
@@ -477,7 +515,7 @@ export default function StudentDashboardPage() {
                 <div className="flex items-start gap-3.5">
                   <button
                     type="button"
-                    onClick={() => toggleTask(task.id)}
+                    onClick={() => toggleTask(task)}
                     className={`mt-0.5 h-5 w-5 rounded-lg flex items-center justify-center border transition-colors shrink-0 ${
                       task.isCompleted
                         ? "bg-emerald-600 border-emerald-600 text-white"
@@ -600,7 +638,7 @@ export default function StudentDashboardPage() {
                       {exams[0].examName}
                     </span>
                     <h4 className="text-sm font-bold text-[#0F172A] mt-0.5">
-                      Mathematics (Standard)
+                      {subjects.find((s) => s.id === exams[0].subjectId)?.name || "Subject"}
                     </h4>
                   </div>
                   <span className="font-heading text-lg font-black text-emerald-600">

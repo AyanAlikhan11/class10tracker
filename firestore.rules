@@ -124,6 +124,25 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // Game Questions (Admin-managed, students read)
+    match /game_questions/{questionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // PYQ Papers collection (admin-managed, students read)
+    match /pyq_papers/{paperId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Game Scores (per student, isolated)
+    match /game_scores/{studentId} {
+      allow read: if isOwner(studentId) || isAdmin();
+      allow create, update: if isOwner(studentId);
+      allow delete: if isAdmin();
+    }
+
     // Audit logs (Admin only)
     match /audit_logs/{logId} {
       allow read, write: if isAdmin();

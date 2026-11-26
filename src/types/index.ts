@@ -13,6 +13,8 @@ export interface UserProfile {
   role: UserRole;
   createdAt: string;
   updatedAt: string;
+  lastLoginAt?: string;
+  dataResetVersion?: number;
 }
 
 export type BoardType = 'CBSE' | 'ICSE' | 'STATE';
@@ -243,4 +245,30 @@ export interface ParentStudentLink {
   inviteCode?: string;
   createdAt: string;
   verifiedAt?: string;
+}
+
+export type GameDifficulty = 'easy' | 'medium' | 'hard' | 'tricky';
+
+export interface GameQuestion {
+  id: string;
+  subjectId: string;
+  chapterId?: string;
+  difficulty: GameDifficulty;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+  points: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface GameScore {
+  id: string;
+  studentId: string;
+  bestScore: number;
+  gamesPlayed: number;
+  correctAnswers: number;
+  totalAnswers: number;
+  updatedAt: string;
 }

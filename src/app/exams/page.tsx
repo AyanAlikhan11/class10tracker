@@ -21,7 +21,7 @@ import {
 
 export default function ExamsTrackerPage() {
   const { user } = useAuth();
-  const uid = user?.uid || "demo-student-101";
+  const uid = user?.uid || "";
 
   const [exams, setExams] = useState<ExamRecord[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -37,55 +37,26 @@ export default function ExamsTrackerPage() {
   const [remarks, setRemarks] = useState("");
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const records = await ExamService.getStudentExams(uid);
-        if (records.length > 0) {
-          setExams(records);
-        } else {
-          // Initial baseline records
-          const seed: ExamRecord[] = [
-            {
-              id: "exam-seed-1",
-              studentId: uid,
-              examName: "Half-Yearly Examination",
-              examType: "half_yearly",
-              date: "2026-09-20",
-              subjectId: "cbse-10-maths-std",
-              maximumMarks: 80,
-              obtainedMarks: 71,
-              percentage: 88.75,
-              remarks: "Lost 4 marks in quadratic equation word problem.",
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-            {
-              id: "exam-seed-2",
-              studentId: uid,
-              examName: "Unit Test 2",
-              examType: "unit_test",
-              date: "2026-08-14",
-              subjectId: "cbse-10-science",
-              maximumMarks: 40,
-              obtainedMarks: 35,
-              percentage: 87.5,
-              remarks: "Need to memorize chemical reaction names.",
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-          ];
-          setExams(seed);
-        }
-      } catch (err) {
-        console.error("Failed to load exams:", err);
-      }
-    };
-    load();
+    if (!uid) {
+      setExams([]);
+      return;
+    }
+    const unsubscribe = ExamService.subscribeStudentExams(uid, (records) => {
+      setExams(
+        [...records].sort((a, b) => (b.date || "").localeCompare(a.date || ""))
+      );
+    });
+    return () => unsubscribe();
   }, [uid]);
 
   const handleAddExam = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+
+    if (!uid) {
+      setFormError("Please sign in to save your exam records.");
+      return;
+    }
 
     const max = Number(maxMarks);
     const obt = Number(obtainedMarks);

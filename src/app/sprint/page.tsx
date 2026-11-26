@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PdfViewerModal } from "@/components/ui/PdfViewerModal";
 import { AuthGateModal } from "@/components/ui/AuthGateModal";
-import { CBSE_CLASS_10_OFFICIAL_PAPERS } from "@/constants/curriculum";
+import { ContentService } from "@/services";
 import { PYQItem, PYQPaperDocument } from "@/types";
 import { getDaysRemaining } from "@/lib/utils";
 import {
@@ -47,9 +47,22 @@ export default function BoardSprintPage() {
 
   // Question bank states
   const [revealedSolutions, setRevealedSolutions] = useState<Record<string, boolean>>({});
-  const [practicedQuestions, setPracticedQuestions] = useState<Record<string, boolean>>({
-    "pyq-1": true,
-  });
+  const [practicedQuestions, setPracticedQuestions] = useState<Record<string, boolean>>({});
+
+  // Official papers are admin-managed in Firestore and merged with the
+  // built-in library, so newly uploaded papers appear here automatically.
+  const [papers, setPapers] = useState<PYQPaperDocument[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    ContentService.getPapers()
+      .then((list) => {
+        if (!cancelled) setPapers(list);
+      })
+      .catch((err) => console.warn("Could not load papers:", err));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleOpenPdf = (paper: PYQPaperDocument) => {
     if (!user) {
@@ -123,7 +136,7 @@ export default function BoardSprintPage() {
     },
   ];
 
-  const filteredPapers = CBSE_CLASS_10_OFFICIAL_PAPERS.filter((p) => {
+  const filteredPapers = papers.filter((p) => {
     if (selectedSubject !== "all" && p.subjectId !== selectedSubject) return false;
     if (selectedDocType !== "all" && p.type !== selectedDocType) return false;
     if (selectedSession !== "all" && p.session !== selectedSession) return false;
@@ -178,7 +191,7 @@ export default function BoardSprintPage() {
           }`}
         >
           <FileText className="h-4 w-4" />
-          Official CBSE Papers & PDFs ({CBSE_CLASS_10_OFFICIAL_PAPERS.length})
+          Official CBSE Papers & PDFs ({papers.length})
         </button>
 
         <button

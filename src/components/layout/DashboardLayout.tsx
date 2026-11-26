@@ -11,6 +11,7 @@ import {
   CalendarCheck,
   TrendingUp,
   ShieldAlert,
+  Brain,
   LogOut,
   Menu,
   X,
@@ -72,6 +73,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { label: "Official PYQ PDFs", href: "/sprint", icon: FileDown, badge: "Free PDFs" },
     { label: "Tests & Marks", href: "/exams", icon: TrendingUp },
     { label: "Mistake Notebook", href: "/mistakes", icon: ShieldAlert },
+    { label: "Brain Sprint Game", href: "/games", icon: Brain, badge: "Play" },
   ];
 
   const handleLogout = async () => {

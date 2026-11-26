@@ -11,10 +11,18 @@ import {
   subscribeToAuthState,
 } from "@/lib/firebase/auth";
 import { isFirebaseConfigured, auth } from "@/lib/firebase/config";
-import { UserService } from "@/services";
+import { UserService, resetStudentActivity } from "@/services";
 import { StudentAcademicProfile, UserProfile, UserRole } from "@/types";
 
 const ADMIN_ROLES: string[] = ["admin", "super_admin", "content_admin", "support_admin"];
+
+/**
+ * Bump this version whenever the private student data schema needs a clean
+ * slate. On next sign-in, each user's private activity is wiped (credentials
+ * and profile are preserved) exactly once. This fixes legacy accounts that
+ * were created while the app still showed shared/demo records.
+ */
+const DATA_RESET_VERSION = 1;
 
 function getConfiguredAdminEmails(): string[] {
   const raw = process.env.NEXT_PUBLIC_ADMIN_EMAILS || "";
@@ -98,16 +106,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return false;
   };
 
-  // Load profiles from Firestore and evaluate admin claims
+  // Load profiles from Firestore, run one-time data reset migration, and evaluate admin claims
   const fetchProfiles = async (uid: string, currentUser?: User | null) => {
     try {
       const [uProf, sProf] = await Promise.all([
         UserService.getUserProfile(uid),
         UserService.getStudentProfile(uid),
       ]);
-      setUserProfile(uProf);
+
+      let profile = uProf;
+      const activeUser = currentUser ?? auth?.currentUser ?? null;
+      const now = new Date().toISOString();
+
+      if (!profile) {
+        // Repair accounts that exist in Firebase Auth but have no Firestore profile.
+        profile = {
+          uid,
+          email: activeUser?.email || "",
+          displayName:
+            activeUser?.displayName || activeUser?.email?.split("@")[0] || "Student",
+          photoURL: activeUser?.photoURL || undefined,
+          role: "student",
+          createdAt: now,
+          updatedAt: now,
+          lastLoginAt: now,
+          dataResetVersion: DATA_RESET_VERSION,
+        };
+        try {
+          await UserService.saveUserProfile(profile);
+        } catch (err) {
+          console.warn("Could not create missing user profile:", err);
+        }
+      } else if ((profile.dataResetVersion ?? 0) < DATA_RESET_VERSION) {
+        // One-time clean slate for legacy accounts (e.g. users from 25-26 Nov).
+        // Clears private academic data only; credentials and profile stay intact.
+        try {
+          await resetStudentActivity(uid);
+        } catch (err) {
+          console.warn("One-time data reset could not fully complete:", err);
+        }
+        profile = {
+          ...profile,
+          dataResetVersion: DATA_RESET_VERSION,
+          lastLoginAt: now,
+          updatedAt: now,
+        };
+        try {
+          await UserService.saveUserProfile(profile);
+        } catch (err) {
+          console.warn("Could not persist data reset version:", err);
+        }
+      } else {
+        const lastLoginMs = profile.lastLoginAt
+          ? new Date(profile.lastLoginAt).getTime()
+          : 0;
+        if (!lastLoginMs || Date.now() - lastLoginMs > 5 * 60 * 1000) {
+          profile = { ...profile, lastLoginAt: now, updatedAt: now };
+          try {
+            await UserService.saveUserProfile(profile);
+          } catch (err) {
+            console.warn("Could not update last login timestamp:", err);
+          }
+        }
+      }
+
+      setUserProfile(profile);
       setStudentProfile(sProf);
-      await verifyAdminUser(currentUser, uProf);
+      await verifyAdminUser(currentUser, profile);
     } catch (err) {
       console.error("Error fetching profiles:", err);
       await verifyAdminUser(currentUser, null);
@@ -174,6 +239,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: "student",
         createdAt: now,
         updatedAt: now,
+        lastLoginAt: now,
+        dataResetVersion: DATA_RESET_VERSION,
       };
       try {
         await UserService.saveUserProfile(newProfile);
@@ -208,6 +275,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             photoURL: cred.user.photoURL || undefined,
             createdAt: now,
             updatedAt: now,
+            lastLoginAt: now,
+            dataResetVersion: DATA_RESET_VERSION,
           };
           await UserService.saveUserProfile(newProfile);
         }

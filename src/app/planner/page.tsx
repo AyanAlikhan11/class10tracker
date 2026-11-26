@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TaskService } from "@/services";
-import { StudyTask } from "@/types";
+import { TaskService, ContentService } from "@/services";
+import { StudyTask, Chapter, Subject } from "@/types";
 import {
   Calendar,
   CheckCircle2,
@@ -29,15 +29,21 @@ function StudyPlannerContent() {
   const rescueQuery = searchParams.get("rescue") === "true";
   const timerQuery = searchParams.get("timer");
 
-  const { user } = useAuth();
-  const uid = user?.uid || "demo-student-101";
+  const { user, studentProfile } = useAuth();
+  const uid = user?.uid || "";
+  const dateKey = new Date().toISOString().split("T")[0];
 
   const [isRescueMode, setIsRescueMode] = useState<boolean>(rescueQuery);
-  const [tasks, setTasks] = useState<StudyTask[]>([]);
+  const [allTasks, setAllTasks] = useState<StudyTask[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [activeTimerTask, setActiveTimerTask] = useState<StudyTask | null>(null);
   const [timerSecondsRemaining, setTimerSecondsRemaining] = useState<number>(25 * 60);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
-  const [completedSessionsCount, setCompletedSessionsCount] = useState<number>(2);
+  const [completedSessionsCount, setCompletedSessionsCount] = useState<number>(0);
+  const seededRef = useRef(false);
+  const rescueSeededRef = useRef(false);
 
   // Today's date formatted
   const todayStr = new Date().toLocaleDateString("en-IN", {
@@ -46,89 +52,147 @@ function StudyPlannerContent() {
     month: "long",
   });
 
+  // Load curriculum content for generating a personalised plan.
   useEffect(() => {
-    // Normal 3 daily tasks
-    const normalTasks: StudyTask[] = [
-      {
-        id: "plan-task-1",
-        studentId: uid,
-        date: new Date().toISOString().split("T")[0],
-        subjectId: "cbse-10-maths-std",
-        chapterId: "math-ch-1",
-        title: "Practice 5 PYQ Questions on Real Numbers",
-        description: "Solve proofs of irrational numbers (√2, √3, √5) from past board papers.",
-        estimatedMinutes: 25,
-        priority: "high",
-        reason: "upcoming_exam",
-        reasonExplanation: "Repeated 3-mark question in 2020-2023 CBSE board papers.",
-        isCompleted: false,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: "plan-task-2",
-        studentId: uid,
-        date: new Date().toISOString().split("T")[0],
-        subjectId: "cbse-10-science",
-        chapterId: "sci-ch-1",
-        title: "Chemical Reactions Key Concepts & Balancing",
-        description: "Read NCERT summary and balance 5 redox and decomposition reactions.",
-        estimatedMinutes: 20,
-        priority: "high",
-        reason: "weak_chapter",
-        reasonExplanation: "Identified in recent unit test as an area for improvement.",
-        isCompleted: false,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: "plan-task-3",
-        studentId: uid,
-        date: new Date().toISOString().split("T")[0],
-        subjectId: "cbse-10-social-science",
-        chapterId: "sst-ch-1",
-        title: "Rise of Nationalism in Europe Flashcards",
-        description: "Review key dates, Treaty of Vienna, and Frankfurt Parliament.",
-        estimatedMinutes: 15,
-        priority: "medium",
-        reason: "revision_due",
-        reasonExplanation: "Scheduled spaced repetition review.",
-        isCompleted: true,
-        createdAt: new Date().toISOString(),
-      },
-    ];
-
-    // Rescue mode tasks (short, high-yield, 15-minute quick win)
-    const rescueTasks: StudyTask[] = [
-      {
-        id: "rescue-task-1",
-        studentId: uid,
-        date: new Date().toISOString().split("T")[0],
-        subjectId: "cbse-10-science",
-        chapterId: "sci-ch-2",
-        title: "15-Min Quick Formula & Reaction Scan",
-        description: "Quick revision of pH definitions and Plaster of Paris / Bleaching powder chemical formulas.",
-        estimatedMinutes: 15,
-        priority: "high",
-        reason: "rescue_mode",
-        reasonExplanation: "Low energy quick-win to preserve your preparation momentum.",
-        isCompleted: false,
-        isRescueTask: true,
-        createdAt: new Date().toISOString(),
-      },
-    ];
-
-    setTasks(isRescueMode ? rescueTasks : normalTasks);
-
-    if (timerQuery) {
-      const match = normalTasks.find((t) => t.id === timerQuery);
-      if (match) {
-        startTaskTimer(match);
+    let cancelled = false;
+    (async () => {
+      try {
+        const [subs, chs] = await Promise.all([
+          ContentService.getSubjects(),
+          ContentService.getAllChapters(),
+        ]);
+        if (!cancelled) {
+          setSubjects(subs);
+          setChapters(chs);
+        }
+      } catch (err) {
+        console.warn("Could not load curriculum content:", err);
       }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Realtime, per-user task subscription.
+  useEffect(() => {
+    if (!uid) {
+      setAllTasks([]);
+      setLoading(false);
+      return;
     }
-  }, [isRescueMode, uid, timerQuery]);
+    setLoading(true);
+    const unsubscribe = TaskService.subscribeDailyTasks(uid, dateKey, (rows) => {
+      setAllTasks(rows.sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || "")));
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, [uid, dateKey]);
+
+  // Seed the student's own 3-task plan if none exists yet.
+  useEffect(() => {
+    if (!uid || loading || seededRef.current) return;
+    if (allTasks.some((t) => !t.isRescueTask)) return;
+    if (!subjects.length || !chapters.length) return;
+
+    const subjectIds = studentProfile?.selectedSubjectIds?.length
+      ? studentProfile.selectedSubjectIds
+      : subjects.map((s) => s.id);
+
+    const starterTasks: StudyTask[] = [];
+    for (const subjectId of subjectIds) {
+      if (starterTasks.length >= 3) break;
+      const subject = subjects.find((s) => s.id === subjectId);
+      const chapter = chapters.find((c) => c.subjectId === subjectId);
+      if (!subject || !chapter) continue;
+      const index = starterTasks.length + 1;
+      starterTasks.push({
+        id: `${uid}_${dateKey}_task-${index}`,
+        studentId: uid,
+        date: dateKey,
+        subjectId,
+        chapterId: chapter.id,
+        title: `Study ${chapter.title} — ${subject.name}`,
+        description: `Cover the NCERT topics for Chapter ${chapter.chapterNumber} and mark them in your syllabus tracker.`,
+        estimatedMinutes: 20,
+        priority: index === 1 ? "high" : "medium",
+        reason: "syllabus_backlog",
+        reasonExplanation: "Personalised focus generated from your selected subjects.",
+        isCompleted: false,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    if (starterTasks.length > 0) {
+      seededRef.current = true;
+      TaskService.saveTasks(starterTasks).catch((err) =>
+        console.warn("Could not save starter plan:", err)
+      );
+    }
+  }, [uid, loading, allTasks, subjects, chapters, studentProfile, dateKey]);
+
+  // Create a 15-minute rescue task when rescue mode is activated.
+  useEffect(() => {
+    if (!isRescueMode || !uid || loading || rescueSeededRef.current) return;
+    if (allTasks.some((t) => t.isRescueTask)) return;
+    if (!subjects.length || !chapters.length) return;
+
+    const subject = subjects.find((s) => s.id === "cbse-10-science") || subjects[0];
+    const chapter = chapters.find((c) => c.subjectId === subject.id) || chapters[0];
+    if (!subject || !chapter) return;
+
+    const rescueTask: StudyTask = {
+      id: `${uid}_${dateKey}_rescue-1`,
+      studentId: uid,
+      date: dateKey,
+      subjectId: subject.id,
+      chapterId: chapter.id,
+      title: `15-Min Quick Review: ${chapter.title}`,
+      description: `High-yield recap of key formulas and concepts from ${subject.name}.`,
+      estimatedMinutes: 15,
+      priority: "high",
+      reason: "rescue_mode",
+      reasonExplanation: "Low energy quick-win to preserve your preparation momentum.",
+      isCompleted: false,
+      isRescueTask: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    rescueSeededRef.current = true;
+    TaskService.saveTasks([rescueTask]).catch((err) =>
+      console.warn("Could not save rescue task:", err)
+    );
+  }, [isRescueMode, uid, loading, allTasks, subjects, chapters, dateKey]);
+
+  const tasks = useMemo(
+    () => allTasks.filter((t) => (isRescueMode ? t.isRescueTask : !t.isRescueTask)),
+    [allTasks, isRescueMode]
+  );
+
+  const toggleComplete = async (task: StudyTask) => {
+    const nextValue = !task.isCompleted;
+    setAllTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, isCompleted: nextValue } : t))
+    );
+    try {
+      await TaskService.toggleTaskCompletion(task.id, nextValue);
+    } catch (err) {
+      console.error("Could not save task completion:", err);
+      setAllTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? { ...t, isCompleted: task.isCompleted } : t))
+      );
+    }
+  };
+
+  const startTaskTimer = (task: StudyTask) => {
+    setActiveTimerTask(task);
+    setTimerSecondsRemaining(task.estimatedMinutes * 60);
+    setIsTimerRunning(true);
+  };
 
   // Focus Timer Tick
   useEffect(() => {
-    let interval: any = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
     if (isTimerRunning && timerSecondsRemaining > 0) {
       interval = setInterval(() => {
         setTimerSecondsRemaining((prev) => prev - 1);
@@ -137,25 +201,22 @@ function StudyPlannerContent() {
       setIsTimerRunning(false);
       setCompletedSessionsCount((prev) => prev + 1);
       if (activeTimerTask) {
-        toggleComplete(activeTimerTask.id);
+        toggleComplete(activeTimerTask);
       }
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTimerRunning, timerSecondsRemaining, activeTimerTask]);
 
-  const toggleComplete = (taskId: string) => {
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId ? { ...t, isCompleted: !t.isCompleted } : t
-      )
-    );
-  };
-
-  const startTaskTimer = (task: StudyTask) => {
-    setActiveTimerTask(task);
-    setTimerSecondsRemaining(task.estimatedMinutes * 60);
-    setIsTimerRunning(true);
-  };
+  // Open the timer directly when arriving from the dashboard shortcut.
+  useEffect(() => {
+    if (!timerQuery) return;
+    const match = allTasks.find((t) => t.id === timerQuery);
+    if (match) startTaskTimer(match);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timerQuery, allTasks.length]);
 
   const formatTimerTime = (totalSecs: number) => {
     const mins = Math.floor(totalSecs / 60);
@@ -185,7 +246,9 @@ function StudyPlannerContent() {
         {/* Consistency streak pill */}
         <div className="inline-flex items-center gap-2 rounded-2xl border border-[#FDE68A] bg-[#FEF3C7] px-4 py-2 text-xs font-bold text-[#92400E] shrink-0">
           <Flame className="h-4 w-4 text-[#D97706]" />
-          <span>5-Day Consistency Streak</span>
+          <span>
+            {completedCount} of {tasks.length} tasks done today
+          </span>
         </div>
       </div>
 
@@ -295,7 +358,7 @@ function StudyPlannerContent() {
               size="sm"
               onClick={() => {
                 setIsTimerRunning(false);
-                toggleComplete(activeTimerTask.id);
+                toggleComplete(activeTimerTask);
                 setActiveTimerTask(null);
               }}
             >
@@ -343,7 +406,7 @@ function StudyPlannerContent() {
                 <div className="flex items-start gap-3.5">
                   <button
                     type="button"
-                    onClick={() => toggleComplete(task.id)}
+                    onClick={() => toggleComplete(task)}
                     className={`mt-1 h-5 w-5 rounded-md flex items-center justify-center border transition-colors shrink-0 ${
                       task.isCompleted
                         ? "bg-[#37A779] border-[#37A779] text-white"

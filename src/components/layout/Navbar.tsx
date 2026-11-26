@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogIn, Menu, X, FileDown, Sparkles, LayoutDashboard, Play, BookOpen, Layers } from "lucide-react";
+import { LogIn, Menu, X, FileDown, Sparkles, LayoutDashboard, Play, BookOpen, Layers, Brain } from "lucide-react";
 import React, { useState } from "react";
 import { Logo } from "@/components/ui/Logo";
 import { useAuth } from "@/context/AuthContext";
@@ -45,6 +45,17 @@ export function Navbar() {
             <span>CBSE PDFs</span>
             <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full font-black tracking-wider">
               {user ? "FREE" : "LOGIN"}
+            </span>
+          </Link>
+
+          <Link
+            href="/games"
+            className="hover:text-blue-600 transition-colors flex items-center gap-1.5 py-2 px-1"
+          >
+            <Brain className="h-4 w-4 text-violet-600" />
+            <span>Brain Sprint</span>
+            <span className="text-[10px] bg-violet-50 text-violet-700 border border-violet-200 px-2 py-0.5 rounded-full font-black tracking-wider">
+              GAME
             </span>
           </Link>
 
@@ -143,6 +154,19 @@ export function Navbar() {
             </span>
             <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-black border border-blue-200">
               {user ? "FREE ACCESS" : "FREE • LOGIN"}
+            </span>
+          </Link>
+          <Link
+            href="/games"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center justify-between text-sm font-bold text-slate-800 hover:text-blue-600 py-2 border-b border-slate-100"
+          >
+            <span className="flex items-center gap-2">
+              <Brain className="h-4 w-4 text-violet-600" />
+              Brain Sprint Game
+            </span>
+            <span className="text-[10px] bg-violet-50 text-violet-700 border border-violet-200 px-2 py-0.5 rounded-full font-black">
+              PLAY
             </span>
           </Link>
           <Link

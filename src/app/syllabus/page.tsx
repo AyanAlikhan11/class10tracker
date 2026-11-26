@@ -9,9 +9,14 @@ import { Button } from "@/components/ui/button";
 import { PdfViewerModal, GenericPdfDocument } from "@/components/ui/PdfViewerModal";
 import { VideoPlayerModal } from "@/components/ui/VideoPlayerModal";
 import { AuthGateModal } from "@/components/ui/AuthGateModal";
-import { INITIAL_CBSE_CLASS_10_SUBJECTS, INITIAL_SAMPLE_CHAPTERS } from "@/constants/curriculum";
-import { ProgressService } from "@/services";
-import { Chapter, ChapterStatus, StudentChapterProgress, ChapterVideoLesson } from "@/types";
+import { ProgressService, ContentService } from "@/services";
+import {
+  Chapter,
+  ChapterStatus,
+  StudentChapterProgress,
+  ChapterVideoLesson,
+  Subject,
+} from "@/types";
 import {
   Layers,
   CheckCircle2,
@@ -43,32 +48,71 @@ export default function SyllabusTrackerPage() {
   const [activeDrawerTab, setActiveDrawerTab] = useState<"topics" | "notes" | "videos" | "personal">("topics");
   const [notesInput, setNotesInput] = useState<string>("");
 
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [allChapters, setAllChapters] = useState<Chapter[]>([]);
+
   // Modals
   const [activePdfModal, setActivePdfModal] = useState<GenericPdfDocument | null>(null);
   const [activeVideoModal, setActiveVideoModal] = useState<{ chapter: Chapter; video?: ChapterVideoLesson } | null>(null);
   const [authGateDoc, setAuthGateDoc] = useState<GenericPdfDocument | null>(null);
 
-  const uid = user?.uid || "demo-student-101";
+  const uid = user?.uid || "";
 
-  // Load progress
+  // Load admin-managed curriculum content.
   useEffect(() => {
-    const load = async () => {
+    let cancelled = false;
+    (async () => {
       try {
-        const progressList = await ProgressService.getStudentProgress(uid);
-        const map: Record<string, StudentChapterProgress> = {};
-        progressList.forEach((p) => {
-          map[p.chapterId] = p;
-        });
-        setProgressMap(map);
+        const [subs, chs] = await Promise.all([
+          ContentService.getSubjects(),
+          ContentService.getAllChapters(),
+        ]);
+        if (cancelled) return;
+        setSubjects(subs);
+        setAllChapters(chs);
+        if (subs.length && !subs.some((s) => s.id === selectedSubjectId)) {
+          setSelectedSubjectId(subs[0].id);
+        }
       } catch (err) {
-        console.error("Failed to load progress:", err);
+        console.warn("Could not load curriculum content:", err);
       }
+    })();
+    return () => {
+      cancelled = true;
     };
-    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Realtime, per-user progress.
+  useEffect(() => {
+    if (!uid) {
+      setProgressMap({});
+      return;
+    }
+    const unsubscribe = ProgressService.subscribeStudentProgress(uid, (progressList) => {
+      const map: Record<string, StudentChapterProgress> = {};
+      progressList.forEach((p) => {
+        map[p.chapterId] = p;
+      });
+      setProgressMap(map);
+    });
+    return () => unsubscribe();
   }, [uid]);
 
-  const activeSubject = INITIAL_CBSE_CLASS_10_SUBJECTS.find((s) => s.id === selectedSubjectId) || INITIAL_CBSE_CLASS_10_SUBJECTS[0];
-  const chapters = INITIAL_SAMPLE_CHAPTERS[selectedSubjectId] || INITIAL_SAMPLE_CHAPTERS["cbse-10-maths-std"] || [];
+  const activeSubject =
+    subjects.find((s) => s.id === selectedSubjectId) ||
+    subjects[0] || {
+      id: selectedSubjectId,
+      boardId: "CBSE",
+      classGrade: "Class 10",
+      name: "Loading curriculum...",
+      code: "",
+      iconName: "BookOpen",
+      color: "#2563EB",
+      isOptional: false,
+      displayOrder: 0,
+    };
+  const chapters = allChapters.filter((c) => c.subjectId === selectedSubjectId);
 
   const handleOpenNotesPdf = (chapter: Chapter) => {
     if (!chapter.notesDocument) return;
@@ -104,7 +148,16 @@ export default function SyllabusTrackerPage() {
     setActiveVideoModal({ chapter, video });
   };
 
+  const requireStudent = () => {
+    if (!user) {
+      window.location.href = "/login?redirect=/syllabus";
+      return false;
+    }
+    return true;
+  };
+
   const updateStatus = async (chapterId: string, status: ChapterStatus) => {
+    if (!requireStudent()) return;
     const existing = progressMap[chapterId];
     const updated: StudentChapterProgress = {
       id: `${uid}_${chapterId}`,
@@ -130,6 +183,7 @@ export default function SyllabusTrackerPage() {
   };
 
   const toggleTopic = async (chapter: Chapter, topicId: string) => {
+    if (!requireStudent()) return;
     const existing = progressMap[chapter.id];
     const currentCompleted = existing?.completedTopicIds || [];
     const newCompleted = currentCompleted.includes(topicId)
@@ -167,6 +221,7 @@ export default function SyllabusTrackerPage() {
   };
 
   const saveNotes = async (chapterId: string) => {
+    if (!requireStudent()) return;
     const existing = progressMap[chapterId];
     const updated: StudentChapterProgress = {
       id: `${uid}_${chapterId}`,
@@ -237,7 +292,7 @@ export default function SyllabusTrackerPage() {
 
         {/* Subjects horizontal selector */}
         <div className="flex gap-2.5 overflow-x-auto pb-2 pt-4 no-scrollbar">
-          {INITIAL_CBSE_CLASS_10_SUBJECTS.map((sub) => {
+          {subjects.map((sub) => {
             const isSelected = sub.id === selectedSubjectId;
             return (
               <button

@@ -22,7 +22,7 @@ import {
 
 export default function MistakeNotebookPage() {
   const { user } = useAuth();
-  const uid = user?.uid || "demo-student-101";
+  const uid = user?.uid || "";
 
   const [mistakes, setMistakes] = useState<MistakeRecord[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -46,54 +46,21 @@ export default function MistakeNotebookPage() {
   ];
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const list = await MistakeService.getStudentMistakes(uid);
-        if (list.length > 0) {
-          setMistakes(list);
-        } else {
-          // Initial baseline mistake records
-          const seed: MistakeRecord[] = [
-            {
-              id: "mistake-seed-1",
-              studentId: uid,
-              subjectId: "cbse-10-maths-std",
-              chapterId: "Quadratic Equations",
-              questionText: "Find the roots of 2x² - 7x + 3 = 0 using quadratic formula.",
-              whatWentWrong: "Made a sign slip in the discriminant: used -4ac as +24 instead of -24.",
-              correctExplanation: "b² - 4ac = (-7)² - 4(2)(3) = 49 - 24 = 25. Roots are (7 ± 5)/4 = 3 or 1/2.",
-              category: "calculation_error",
-              isUnderstood: true,
-              revisionCount: 2,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-            {
-              id: "mistake-seed-2",
-              studentId: uid,
-              subjectId: "cbse-10-science",
-              chapterId: "Chemical Reactions",
-              questionText: "Write balanced equation for lead nitrate thermal decomposition.",
-              whatWentWrong: "Forgot that brown fumes are NO₂ and omitted oxygen gas from products.",
-              correctExplanation: "2Pb(NO₃)₂ (s) → 2PbO (s) + 4NO₂ (g) + O₂ (g). Brown fumes = Nitrogen dioxide.",
-              category: "forgot_formula",
-              isUnderstood: false,
-              revisionCount: 1,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-          ];
-          setMistakes(seed);
-        }
-      } catch (err) {
-        console.error("Failed to load mistakes:", err);
-      }
-    };
-    load();
+    if (!uid) {
+      setMistakes([]);
+      return;
+    }
+    const unsubscribe = MistakeService.subscribeStudentMistakes(uid, (list) => {
+      setMistakes(
+        [...list].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""))
+      );
+    });
+    return () => unsubscribe();
   }, [uid]);
 
   const handleAddMistake = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!uid) return;
     const newRecord: MistakeRecord = {
       id: `mistake-${Date.now()}`,
       studentId: uid,
