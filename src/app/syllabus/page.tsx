@@ -17,6 +17,7 @@ import {
   ChapterVideoLesson,
   Subject,
 } from "@/types";
+import { CBSE_CLASS_10_CURRICULUM_RESOURCES } from "@/constants/curriculum";
 import {
   Layers,
   CheckCircle2,
@@ -37,6 +38,8 @@ import {
   Atom,
   Globe,
   Languages,
+  Eye,
+  FileDown,
 } from "lucide-react";
 
 export default function SyllabusTrackerPage() {
@@ -55,6 +58,7 @@ export default function SyllabusTrackerPage() {
   const [activePdfModal, setActivePdfModal] = useState<GenericPdfDocument | null>(null);
   const [activeVideoModal, setActiveVideoModal] = useState<{ chapter: Chapter; video?: ChapterVideoLesson } | null>(null);
   const [authGateDoc, setAuthGateDoc] = useState<GenericPdfDocument | null>(null);
+  const [allResourcesModalOpen, setAllResourcesModalOpen] = useState(false);
 
   const uid = user?.uid || "";
 
@@ -113,6 +117,38 @@ export default function SyllabusTrackerPage() {
       displayOrder: 0,
     };
   const chapters = allChapters.filter((c) => c.subjectId === selectedSubjectId);
+
+  const handleOpenCurriculumPdf = (title: string, localPdfUrl: string, fileName: string, fileSizeBytes?: string) => {
+    const doc: GenericPdfDocument = {
+      id: fileName,
+      title,
+      pdfUrl: localPdfUrl,
+      localPdfUrl,
+      fileName,
+      fileSizeBytes,
+      session: "CBSE Class 10 (2026-2027)",
+      type: "official_curriculum",
+    };
+    if (!user) {
+      setAuthGateDoc(doc);
+    } else {
+      setActivePdfModal(doc);
+    }
+  };
+
+  const handleDownloadCurriculumPdf = (e: React.MouseEvent, title: string, localPdfUrl: string, fileName: string) => {
+    if (!user) {
+      e.preventDefault();
+      setAuthGateDoc({
+        id: fileName,
+        title,
+        pdfUrl: localPdfUrl,
+        localPdfUrl,
+        fileName,
+        session: "CBSE Class 10 (2026-2027)",
+      });
+    }
+  };
 
   const handleOpenNotesPdf = (chapter: Chapter) => {
     if (!chapter.notesDocument) return;
@@ -344,6 +380,149 @@ export default function SyllabusTrackerPage() {
           </div>
         </div>
       </Card>
+
+      {/* Official 2026-27 Syllabus & Comprehensive Key Notes Section */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-600 text-white text-xs font-bold shadow-xs">
+              ★
+            </span>
+            <h2 className="text-base sm:text-lg font-bold font-heading text-[#0F172A]">
+              Official 2026–27 Syllabus & Comprehensive Key Notes
+            </h2>
+            <span className="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full">
+              Free PDFs
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setAllResourcesModalOpen(true)}
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-white border border-blue-200/80 hover:border-blue-400 px-3 py-1.5 rounded-xl shadow-xs transition-all"
+          >
+            <BookOpen className="h-3.5 w-3.5" />
+            <span>Browse All 12 Syllabi & Notes</span>
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {/* 2-Card Row for Currently Selected Subject */}
+        {(() => {
+          const res = CBSE_CLASS_10_CURRICULUM_RESOURCES[selectedSubjectId];
+          if (!res) return null;
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Card 1: Official Syllabus */}
+              <div className="rounded-2xl border border-blue-200/80 bg-gradient-to-br from-blue-50/60 via-white to-blue-50/20 p-5 flex flex-col justify-between gap-3 shadow-xs">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-blue-700 bg-blue-100/80 border border-blue-200 px-2.5 py-0.5 rounded-full">
+                      <BookOpen className="h-3 w-3" /> Official CBSE Board Syllabus
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-500">Session 2026-27</span>
+                  </div>
+
+                  {res.syllabus.map((syl) => (
+                    <div key={syl.id} className="space-y-1.5 mb-2.5 last:mb-0">
+                      <h4 className="text-sm sm:text-base font-bold font-heading text-[#0F172A]">
+                        {syl.title}
+                      </h4>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        {syl.description}
+                      </p>
+                      <div className="flex items-center gap-3 text-[11px] font-medium text-slate-500 pt-0.5">
+                        <span>Size: <strong className="text-slate-800">{syl.fileSizeBytes}</strong></span>
+                        <span>•</span>
+                        <span>{syl.pageCount} Pages</span>
+                        {syl.code && (
+                          <>
+                            <span>•</span>
+                            <span className="text-blue-700 font-bold">Code: {syl.code}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2 border-t border-blue-100/70 flex items-center justify-end gap-2 flex-wrap">
+                  {res.syllabus.map((syl) => (
+                    <React.Fragment key={syl.id}>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenCurriculumPdf(syl.title, syl.localPdfUrl, syl.fileName, syl.fileSizeBytes)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        <span>View Syllabus</span>
+                      </button>
+                      <a
+                        href={syl.localPdfUrl}
+                        download={syl.fileName}
+                        onClick={(e) => handleDownloadCurriculumPdf(e, syl.title, syl.localPdfUrl, syl.fileName)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold transition-all"
+                      >
+                        <Download className="h-3.5 w-3.5 text-slate-500" />
+                        <span>Download PDF</span>
+                      </a>
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+
+              {/* Card 2: Comprehensive Key Notes */}
+              {res.keyNotes && (
+                <div className="rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/60 via-white to-emerald-50/20 p-5 flex flex-col justify-between gap-3 shadow-xs">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-100/80 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                        <FileText className="h-3 w-3" /> Comprehensive Key Notes
+                      </span>
+                      <span className="text-[11px] font-bold text-slate-500">Session 2026-27</span>
+                    </div>
+
+                    <h4 className="text-sm sm:text-base font-bold font-heading text-[#0F172A]">
+                      {res.keyNotes.title}
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                      {res.keyNotes.description}
+                    </p>
+
+                    <div className="flex items-center gap-3 text-[11px] font-medium text-slate-500 pt-2">
+                      <span>Size: <strong className="text-slate-800">{res.keyNotes.fileSizeBytes}</strong></span>
+                      <span>•</span>
+                      <span>{res.keyNotes.pageCount} Pages</span>
+                      <span>•</span>
+                      <span className="text-emerald-700 font-bold">All Chapters Included</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-emerald-100/70 flex items-center justify-end gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenCurriculumPdf(res.keyNotes!.title, res.keyNotes!.localPdfUrl, res.keyNotes!.fileName, res.keyNotes!.fileSizeBytes)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      <span>View Key Notes</span>
+                    </button>
+                    <a
+                      href={res.keyNotes.localPdfUrl}
+                      download={res.keyNotes.fileName}
+                      onClick={(e) => handleDownloadCurriculumPdf(e, res.keyNotes!.title, res.keyNotes!.localPdfUrl, res.keyNotes!.fileName)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold transition-all"
+                    >
+                      <Download className="h-3.5 w-3.5 text-slate-500" />
+                      <span>Download PDF</span>
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+      </div>
 
       {/* Filter Chips */}
       <div className="flex items-center gap-2 text-xs font-bold overflow-x-auto pb-1">
@@ -757,6 +936,171 @@ export default function SyllabusTrackerPage() {
                 onClick={() => saveNotes(activeChapterForDrawer.id)}
               >
                 Save My Notes
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ALL 12 SYLLABUS & KEY NOTES MODAL */}
+      {allResourcesModalOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200"
+          onClick={() => setAllResourcesModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-100 bg-slate-50/70">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/20">
+                  <BookOpen className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black font-heading text-[#0F172A]">
+                    Official CBSE 2026–27 Syllabus & Comprehensive Key Notes
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    12 Free Official Board PDFs • Read in browser or download offline
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setAllResourcesModalOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Modal Content - Scrollable Grid */}
+            <div className="p-5 sm:p-6 overflow-y-auto space-y-6">
+              {Object.values(CBSE_CLASS_10_CURRICULUM_RESOURCES).map((res) => (
+                <div
+                  key={res.subjectId}
+                  className="rounded-2xl border border-slate-200/80 p-4 sm:p-5 bg-white shadow-xs space-y-3"
+                >
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                    <h4 className="text-base font-bold font-heading text-[#0F172A] flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
+                      {res.subjectName}
+                    </h4>
+                    <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                      Session 2026-27
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    {/* Syllabi */}
+                    {res.syllabus.map((syl) => (
+                      <div
+                        key={syl.id}
+                        className="rounded-xl border border-blue-100 bg-blue-50/40 p-3.5 flex flex-col justify-between gap-2.5"
+                      >
+                        <div>
+                          <div className="flex items-center justify-between gap-1 mb-1">
+                            <span className="text-[10px] font-extrabold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
+                              CBSE Syllabus
+                            </span>
+                            <span className="text-[10px] font-medium text-slate-500">
+                              {syl.fileSizeBytes} • {syl.pageCount} pgs
+                            </span>
+                          </div>
+                          <h5 className="text-xs font-bold text-[#0F172A] leading-snug">
+                            {syl.title}
+                          </h5>
+                          <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                            {syl.description}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-blue-100/60">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAllResourcesModalOpen(false);
+                              handleOpenCurriculumPdf(syl.title, syl.localPdfUrl, syl.fileName, syl.fileSizeBytes);
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold transition-all shadow-2xs"
+                          >
+                            <Eye className="h-3 w-3" />
+                            <span>View</span>
+                          </button>
+                          <a
+                            href={syl.localPdfUrl}
+                            download={syl.fileName}
+                            onClick={(e) => handleDownloadCurriculumPdf(e, syl.title, syl.localPdfUrl, syl.fileName)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-[11px] font-bold transition-all"
+                          >
+                            <Download className="h-3 w-3 text-slate-500" />
+                            <span>Download</span>
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Key Notes */}
+                    {res.keyNotes && (
+                      <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-3.5 flex flex-col justify-between gap-2.5">
+                        <div>
+                          <div className="flex items-center justify-between gap-1 mb-1">
+                            <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                              Key Notes
+                            </span>
+                            <span className="text-[10px] font-medium text-slate-500">
+                              {res.keyNotes.fileSizeBytes} • {res.keyNotes.pageCount} pgs
+                            </span>
+                          </div>
+                          <h5 className="text-xs font-bold text-[#0F172A] leading-snug">
+                            {res.keyNotes.title}
+                          </h5>
+                          <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                            {res.keyNotes.description}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-emerald-100/60">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAllResourcesModalOpen(false);
+                              handleOpenCurriculumPdf(res.keyNotes!.title, res.keyNotes!.localPdfUrl, res.keyNotes!.fileName, res.keyNotes!.fileSizeBytes);
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-all shadow-2xs"
+                          >
+                            <Eye className="h-3 w-3" />
+                            <span>View</span>
+                          </button>
+                          <a
+                            href={res.keyNotes.localPdfUrl}
+                            download={res.keyNotes.fileName}
+                            onClick={(e) => handleDownloadCurriculumPdf(e, res.keyNotes!.title, res.keyNotes!.localPdfUrl, res.keyNotes!.fileName)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-[11px] font-bold transition-all"
+                          >
+                            <Download className="h-3 w-3 text-slate-500" />
+                            <span>Download</span>
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl"
+                onClick={() => setAllResourcesModalOpen(false)}
+              >
+                Close Library
               </Button>
             </div>
           </div>

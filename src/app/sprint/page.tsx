@@ -288,7 +288,8 @@ export default function BoardSprintPage() {
                     <option value="cbse-10-maths-basic">Maths (Basic)</option>
                     <option value="cbse-10-science">Science</option>
                     <option value="cbse-10-social-science">Social Science</option>
-                    <option value="cbse-10-english">English (184)</option>
+                    <option value="cbse-10-english">English</option>
+                    <option value="cbse-10-hindi-a">Hindi</option>
                   </select>
                 </div>
 
@@ -315,6 +316,8 @@ export default function BoardSprintPage() {
                     className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-[#0F172A] focus:border-[#2563EB] focus:outline-none"
                   >
                     <option value="all">All Types</option>
+                    <option value="official_syllabus">Official CBSE Syllabus (2026-27)</option>
+                    <option value="subject_key_notes">Comprehensive Key Notes (2026-27)</option>
                     <option value="practice_paper">Model Practice Papers (2026-27)</option>
                     <option value="question_bank">Question Banks (NCERT24)</option>
                     <option value="question_paper">Question Papers</option>
@@ -325,11 +328,43 @@ export default function BoardSprintPage() {
             </div>
           </Card>
 
+          {/* Quick Category Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold">
+            <span className="text-[#64748B] flex items-center gap-1 shrink-0 mr-1">
+              <Filter className="h-3.5 w-3.5" /> Quick Filter:
+            </span>
+            {[
+              { id: "all", label: `All Materials (${papers.length})` },
+              { id: "official_syllabus", label: "Official Syllabus (7)" },
+              { id: "subject_key_notes", label: "Comprehensive Notes (5)" },
+              { id: "practice_paper", label: "2026-27 Model Papers" },
+              { id: "question_bank", label: "Question Banks" },
+              { id: "question_paper", label: "Sample Papers" },
+              { id: "marking_scheme", label: "Solutions" },
+            ].map((chip) => (
+              <button
+                key={chip.id}
+                onClick={() => setSelectedDocType(chip.id)}
+                className={`px-3 py-1.5 rounded-xl border whitespace-nowrap transition-all ${
+                  selectedDocType === chip.id
+                    ? "bg-[#2563EB] border-[#2563EB] text-white shadow-xs"
+                    : "bg-white border-slate-200 text-[#64748B] hover:bg-slate-50"
+                }`}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+
           {/* Papers Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredPapers.map((paper) => {
               const getBadgeDetails = () => {
                 switch (paper.type) {
+                  case "official_syllabus":
+                    return { label: "Official CBSE Syllabus", variant: "primary" as const };
+                  case "subject_key_notes":
+                    return { label: "Comprehensive Key Notes", variant: "success" as const };
                   case "practice_paper":
                     return { label: "2026-27 Model Paper", variant: "primary" as const };
                   case "question_bank":

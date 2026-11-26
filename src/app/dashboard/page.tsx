@@ -368,10 +368,10 @@ export default function StudentDashboardPage() {
         </Card>
       </div>
 
-      {/* 3. PROMINENT CBSE PYQ PAPERS & CHAPTER NOTES CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* 3. PROMINENT CBSE PYQ PAPERS, SYLLABUS & CHAPTER NOTES CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* PYQ Papers Card */}
-        <div className="rounded-2xl border border-blue-200/80 bg-gradient-to-r from-blue-50/70 via-white to-blue-50/30 p-5 flex flex-col justify-between gap-3 shadow-xs">
+        <div className="rounded-2xl border border-blue-200/80 bg-gradient-to-br from-blue-50/70 via-white to-blue-50/30 p-5 flex flex-col justify-between gap-3 shadow-xs">
           <div className="flex items-start gap-3.5">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shrink-0 shadow-md shadow-blue-500/20">
               <FileDown className="h-5 w-5" />
@@ -379,14 +379,14 @@ export default function StudentDashboardPage() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-sm sm:text-base font-black font-heading text-[#0F172A]">
-                  Official Board Papers & Solutions
+                  Official Board Papers
                 </h3>
                 <span className="text-[10px] font-extrabold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full border border-blue-200">
                   Free PDFs
                 </span>
               </div>
               <p className="text-xs font-medium text-slate-600 mt-1 leading-relaxed">
-                CBSE Class 10 sample question papers and step-by-step marking schemes.
+                CBSE sample question papers, marking schemes, and 2026-27 model tests.
               </p>
             </div>
           </div>
@@ -394,16 +394,48 @@ export default function StudentDashboardPage() {
           <div className="pt-2 flex justify-end">
             <Link
               href="/sprint"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-xs font-bold text-white hover:bg-blue-700 shadow-sm transition-all"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 text-xs font-bold text-white hover:bg-blue-700 shadow-xs transition-all"
             >
-              <span>Open PDF Papers</span>
+              <span>Open Papers</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Official 2026-27 Syllabus & Comprehensive Key Notes Card */}
+        <div className="rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/70 via-white to-emerald-50/30 p-5 flex flex-col justify-between gap-3 shadow-xs">
+          <div className="flex items-start gap-3.5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-white shrink-0 shadow-md shadow-emerald-600/20">
+              <BookOpen className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm sm:text-base font-black font-heading text-[#0F172A]">
+                  2026–27 Syllabus & Notes
+                </h3>
+                <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
+                  12 New PDFs
+                </span>
+              </div>
+              <p className="text-xs font-medium text-slate-600 mt-1 leading-relaxed">
+                Official CBSE curriculum guides and comprehensive chapter-wise key notes.
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-2 flex justify-end">
+            <Link
+              href="/syllabus"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 text-xs font-bold text-white hover:bg-emerald-700 shadow-xs transition-all"
+            >
+              <span>Access 12 PDFs</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>
 
         {/* Chapter Notes & YouTube Video Lessons Card */}
-        <div className="rounded-2xl border border-rose-200/80 bg-gradient-to-r from-rose-50/60 via-white to-emerald-50/30 p-5 flex flex-col justify-between gap-3 shadow-xs">
+        <div className="rounded-2xl border border-rose-200/80 bg-gradient-to-br from-rose-50/60 via-white to-rose-50/30 p-5 flex flex-col justify-between gap-3 shadow-xs">
           <div className="flex items-start gap-3.5">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-600 text-white shrink-0 shadow-md shadow-rose-600/20">
               <Play className="h-5 w-5 fill-white ml-0.5" />
@@ -411,10 +443,10 @@ export default function StudentDashboardPage() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-sm sm:text-base font-black font-heading text-[#0F172A]">
-                  Chapter Notes (PDF) & Videos
+                  Chapter Notes & Videos
                 </h3>
                 <span className="text-[10px] font-extrabold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full border border-rose-200">
-                  New Videos
+                  One-Shots
                 </span>
               </div>
               <p className="text-xs font-medium text-slate-600 mt-1 leading-relaxed">
@@ -426,9 +458,9 @@ export default function StudentDashboardPage() {
           <div className="pt-2 flex justify-end">
             <Link
               href="/syllabus"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold text-white hover:bg-rose-700 shadow-sm transition-all"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-600 text-xs font-bold text-white hover:bg-rose-700 shadow-xs transition-all"
             >
-              <span>Learn & Watch Videos</span>
+              <span>Watch Videos</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>

@@ -548,6 +548,43 @@ export default function LandingPage() {
               </Link>
             </div>
 
+            {/* 2026-27 Official Syllabus & Key Notes Highlight Banner */}
+            <div className="mb-6 rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50/80 via-white to-blue-50/50 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+              <div className="flex items-start sm:items-center gap-3.5">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-600/20">
+                  <BookOpen className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-black uppercase tracking-wider text-emerald-800 bg-emerald-100 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                      New Material (2026-27)
+                    </span>
+                    <h3 className="text-sm sm:text-base font-bold text-[#0F172A] font-heading">
+                      Official CBSE Syllabus & Comprehensive Key Notes (12 PDFs)
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                    Official board curriculum documents for Maths, Science, Social Science, English & Hindi, plus detailed chapter-wise formula and short notes PDFs.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <Link
+                  href="/syllabus"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs transition-all"
+                >
+                  Explore in Syllabus →
+                </Link>
+                <Link
+                  href="/sprint"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-emerald-700 bg-white border border-emerald-200 hover:bg-emerald-50 transition-all"
+                >
+                  View in Sprint Hub
+                </Link>
+              </div>
+            </div>
+
             {/* Auth Notice Pill */}
             {!user && (
               <div className="mb-6 p-3.5 rounded-2xl border border-blue-200 bg-blue-50/70 text-xs text-blue-900 flex items-center justify-between gap-3">

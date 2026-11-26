@@ -226,7 +226,7 @@ export interface PYQPaperDocument {
   subjectName: string;
   year: number;
   session: string;
-  type: 'question_paper' | 'marking_scheme' | 'practice_paper' | 'question_bank';
+  type: 'question_paper' | 'marking_scheme' | 'practice_paper' | 'question_bank' | 'official_syllabus' | 'subject_key_notes';
   fileName: string;
   localPdfUrl: string;
   officialSourceUrl: string;
@@ -235,6 +235,30 @@ export interface PYQPaperDocument {
   maxMarks: number;
   durationHours: number;
   isVerified: boolean;
+}
+
+export interface SubjectCurriculumResource {
+  subjectId: string;
+  subjectName: string;
+  syllabus: Array<{
+    id: string;
+    title: string;
+    fileName: string;
+    localPdfUrl: string;
+    fileSizeBytes: string;
+    pageCount: number;
+    description: string;
+    code?: string;
+  }>;
+  keyNotes?: {
+    id: string;
+    title: string;
+    fileName: string;
+    localPdfUrl: string;
+    fileSizeBytes: string;
+    pageCount: number;
+    description: string;
+  };
 }
 
 export interface ParentStudentLink {
